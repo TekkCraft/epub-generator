@@ -1,0 +1,9 @@
+nbproject/
+.idea/
+composer.phar
+.DS_STORE
+cache.properties
+.phpunit.result.cache
+
+vendor/
+resources/

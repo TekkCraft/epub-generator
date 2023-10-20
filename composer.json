@@ -1,0 +1,28 @@
+{
+    "name": "tekkcraft/epub-generator",
+    "description": "Generate EPUB files",
+    "type": "library",
+    "require": {
+        "php": "^8.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.4"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Tekkcraft\\EpubGenerator\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tekkcraft\\EpubGenerator\\Test\\": "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Marc",
+            "email": "marc.wilhelm.ch@gmail.com"
+        }
+    ]
+}
