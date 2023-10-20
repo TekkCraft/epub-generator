@@ -3,6 +3,8 @@
 namespace Tekkcraft\EpubGenerator;
 
 use DateTime;
+use DOMDocument;
+use DOMImplementation;
 use RuntimeException;
 use SimpleXMLElement;
 use ZipArchive;
@@ -135,25 +137,52 @@ class EpubDocument
      */
     private function addTocPage(ZipArchive $zip): void
     {
-        $navContent = '<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
-<head>
-    <title>Table of Contents</title>
-</head>
-<body>
-    <h1>Table of Contents</h1>
-    <nav id="toc" epub:type="toc">
-        <ol>';
+        $doc = new DOMDocument('1.0', 'UTF-8');
 
-            foreach ($this->sections as $section) {
-                $navContent .= '<li><a href="' . $section->getSectionName() . '.xhtml">' . $section->getSectionTitle() . '</a></li>';
-            }
+        // Add <!DOCTYPE html> part
+        $implementation = new DOMImplementation();
+        $doctype = $implementation->createDocumentType('html');
+        $doc->appendChild($doctype);
 
-        $navContent .= '</ol>
-    </nav>
-</body>
-</html>';
+        $html = $doc->createElement('html');
+        $html->setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+        $html->setAttribute('xmlns:epub', 'http://www.idpf.org/2007/ops');
+
+        $doc->appendChild($html);
+
+        // Build header part
+        $header = $doc->createElement('head');
+        $html->appendChild($header);
+        $title = $doc->createElement('title', 'Table of Contents');
+        $header->appendChild($title);
+
+        // Build body part
+        $body = $doc->createElement('body');
+        $html->appendChild($body);
+        $h1 = $doc->createElement('h1', 'Table of Contents');
+        $body->appendChild($h1);
+
+        // Build navigation part
+        $nav = $doc->createElement('nav');
+        $nav->setAttribute('id', 'toc');
+        $nav->setAttribute('epub:type', 'toc');
+        $body->appendChild($nav);
+
+        // Create ordered list
+        $ol = $doc->createElement('ol');
+        $nav->appendChild($ol);
+
+        // Add list items to ordered list
+        foreach ($this->sections as $section) {
+            $li = $doc->createElement('li');
+            $ol->appendChild($li);
+            $a = $doc->createElement('a', $section->getSectionTitle());
+            $li->appendChild($a);
+            $a->setAttribute('href', $section->getSectionName() . '.xhtml');
+        }
+
+        $navContent = $doc->saveXML();
+
         $zip->addFromString('EPUB/toc.xhtml', $navContent);
     }
 
