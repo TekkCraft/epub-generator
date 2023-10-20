@@ -4,6 +4,7 @@ namespace Tekkcraft\EpubGenerator;
 
 use DateTime;
 use RuntimeException;
+use SimpleXMLElement;
 use ZipArchive;
 
 class EpubDocument
@@ -110,12 +111,19 @@ class EpubDocument
      */
     private function addContainer(ZipArchive $zip): void
     {
-        $containerXml = '<?xml version="1.0" encoding="UTF-8"?>
-    <container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
-        <rootfiles>
-            <rootfile full-path="EPUB/package.opf" media-type="application/oebps-package+xml"/>
-        </rootfiles>
-    </container>';
+        $containerElement = new SimpleXMLElement('<container/>');
+        $containerElement->addAttribute('version', '1.0', 'urn:oasis:names:tc:opendocument:xmlns:container');
+
+        $containerElement->addAttribute('version', '1.0');
+        $containerElement->addAttribute('xmlns', 'urn:oasis:names:tc:opendocument:xmlns:container');
+
+        $rootfiles = $containerElement->addChild('rootfiles');
+        $rootfile = $rootfiles->addChild('rootfile');
+        $rootfile->addAttribute('full-path', 'EPUB/package.opf');
+        $rootfile->addAttribute('media-type', 'application/oebps-package+xml');
+
+        $containerXml = $containerElement->asXML();
+
         $zip->addFromString('META-INF/container.xml', $containerXml);
     }
 
