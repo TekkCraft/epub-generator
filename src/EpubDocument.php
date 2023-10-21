@@ -20,8 +20,12 @@ class EpubDocument
      * @param string $identifier The identifier of the EPUB
      * @param string $path The path where the EPUB file should be saved to
      */
-    public function __construct(private string $name, private string $author, private string $identifier, private string $path)
-    {
+    public function __construct(
+        private string $name,
+        private string $author,
+        private string $identifier,
+        private string $path,
+    ) {
     }
 
     /**
@@ -195,32 +199,63 @@ class EpubDocument
     private function addPackageOpf(ZipArchive $zip): void
     {
         $currentTime = new DateTime('now');
-        $contentOpf = '<?xml version="1.0" encoding="UTF-8"?>
-    <package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="pub-identifier">
-        <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
-            <dc:identifier id="pub-identifier">' . $this->identifier . '</dc:identifier>
-            <dc:title>' . $this->name . '</dc:title>
-            <dc:creator>' . $this->author . '</dc:creator>
-            <dc:language>en</dc:language>
-            <meta property="dcterms:modified">' . $currentTime->format('Y-m-d\TH:i:s\Z') . '</meta>
-        </metadata>
-        <manifest>
-            <item id="toc" href="toc.xhtml" media-type="application/xhtml+xml" properties="nav" />';
+
+        $doc = new DOMDocument('1.0', 'UTF-8');
+
+        $packageElement = $doc->createElement('package');
+        $packageElement->setAttribute('xmlns', 'http://www.idpf.org/2007/opf');
+        $packageElement->setAttribute('version', '3.0');
+        $packageElement->setAttribute('unique-identifier', 'pub-identifier');
+
+        $metadataElement = $doc->createElement('metadata');
+        $metadataElement->setAttribute('xmlns:dc', 'http://purl.org/dc/elements/1.1/');
+
+        $packageElement->appendChild($metadataElement);
+
+        $identifierElement = $doc->createElement('dc:identifier', $this->identifier);
+        $identifierElement->setAttribute('id', 'pub-identifier');
+        $metadataElement->appendChild($identifierElement);
+
+        $metadataElement->appendChild($doc->createElement('dc:title', $this->name));
+        $metadataElement->appendChild($doc->createElement('dc:creator', $this->author));
+        $metadataElement->appendChild($doc->createElement('dc:language', 'en'));
+        $metadataElement->appendChild($doc->createElement('meta', $currentTime->format('Y-m-d\TH:i:s\Z')))
+            ->setAttribute('property', 'dcterms:modified');
+
+        $manifestElement = $doc->createElement('manifest');
+        $packageElement->appendChild($manifestElement);
+
+        $itemTOC = $doc->createElement('item');
+        $itemTOC->setAttribute('id', 'toc');
+        $itemTOC->setAttribute('href', 'toc.xhtml');
+        $itemTOC->setAttribute('media-type', 'application/xhtml+xml');
+        $itemTOC->setAttribute('properties', 'nav');
+        $manifestElement->appendChild($itemTOC);
 
         foreach ($this->sections as $section) {
-            $contentOpf .= '<item id="' . $section->getSectionName() . '" href="' . $section->getSectionName() . '.xhtml" media-type="application/xhtml+xml"/>';
+            $itemSection = $doc->createElement('item');
+            $itemSection->setAttribute('id', $section->getSectionName());
+            $itemSection->setAttribute('href', $section->getSectionName() . '.xhtml');
+            $itemSection->setAttribute('media-type', 'application/xhtml+xml');
+            $manifestElement->appendChild($itemSection);
         }
 
-        $contentOpf .= '</manifest>
-        <spine>
-            <itemref idref="toc" />';
+        $spineElement = $doc->createElement('spine');
+        $packageElement->appendChild($spineElement);
+
+        $itemRefTOC = $doc->createElement('itemref');
+        $itemRefTOC->setAttribute('idref', 'toc');
+        $spineElement->appendChild($itemRefTOC);
+
+        $doc->appendChild($packageElement);
 
         foreach ($this->sections as $section) {
-            $contentOpf .= '<itemref idref="' . $section->getSectionName() . '"/>';
+            $itemRefTOC = $doc->createElement('itemref');
+            $itemRefTOC->setAttribute('idref', $section->getSectionName());
+            $spineElement->appendChild($itemRefTOC);
         }
 
-        $contentOpf .= '</spine>
-    </package>';
+        $contentOpf = $doc->saveXML();
 
         $zip->addFromString('EPUB/package.opf', $contentOpf);
     }
