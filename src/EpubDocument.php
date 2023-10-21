@@ -84,7 +84,7 @@ class EpubDocument
     public function generateEpub(): string
     {
         $zip = new ZipArchive();
-        $epubFile = $this->path . '/' . $this->name . '.epub';
+        $epubFile = $this->path . DIRECTORY_SEPARATOR . $this->name . '.epub';
         if ($zip->open($epubFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
             $this->addMimetype($zip);
             $this->addImages($zip);
