@@ -40,18 +40,11 @@ class EpubDocument
     /**
      * Add a new section to the EPUB file.
      *
-     *  Format:
-     *  <h1>Chapter 1</h1>
-     *  <p>This is the content of Chapter 1.</p>
-     *
-     * @param string $sectionName Section name
-     * @param string $sectionTitle Section title
-     * @param string $content Content in HTML format
-     * @return void
+     * @param EpubSection $section EPUB section
      */
-    public function addSection(string $sectionName, string $sectionTitle, string $content): void
+    public function addSection(EpubSection $section): void
     {
-        $this->sections[] = new EpubSection($sectionName, $sectionTitle, $content);
+        $this->sections[] = $section;
     }
 
     /**

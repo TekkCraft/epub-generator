@@ -8,11 +8,23 @@ A simple library to generate EPUB files.
 $coverImage = new \Tekkcraft\EpubGenerator\EpubImage('path/to/image-folder', 'cover.png', 'image/png');
 
 $generator = new \Tekkcraft\EpubGenerator\EpubDocument('book', 'TekkCraft', 'unique-book-name', '/path/to/storage-directory', $coverImage);
-$generator->addSection('section1', 'Section 1', '<h1>Section 1</h1><p>Some</p><p>content</p>');
+
+$sectionOne = new \Tekkcraft\EpubGenerator\EpubSection(
+    'section1',
+    'Section 1',
+    '<h1>Chapter 1</h1><p>This is the content of Chapter 1.</p>',
+);
+$generator->addSection($sectionOne);
 
 $image = new \Tekkcraft\EpubGenerator\EpubImage('path/to/image-folder', 'image.png', 'image/png');
 $generator->addImage($image);
-$generator->addSection('section2', 'Section 2', '<h1>Section 2</h1><img src="img/image.png"/>');
+
+$sectionTwo = new \Tekkcraft\EpubGenerator\EpubSection(
+    'section2',
+    'Section 2',
+    '<h1>Chapter 2</h1><p>This is the content of Chapter 2.</p><img src="img/image.png" />',
+);
+$generator->addSection($sectionTwo);
 
 $epubFile = $generator->generateEpub();
 ```

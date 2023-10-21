@@ -5,6 +5,7 @@ namespace Tekkcraft\EpubGenerator\Test;
 use Tekkcraft\EpubGenerator\EpubDocument;
 use PHPUnit\Framework\TestCase;
 use Tekkcraft\EpubGenerator\EpubImage;
+use Tekkcraft\EpubGenerator\EpubSection;
 use Tekkcraft\EpubGenerator\Test\traits\EpubTestTrait;
 
 /**
@@ -31,20 +32,29 @@ class EpubDocumentTest extends TestCase
             'image/png',
         );
 
+        $epubDocument = new EpubDocument('test', 'phpunit', 'unique-identifier', sys_get_temp_dir(), $coverImage);
+
         $image = new EpubImage(
             __DIR__ . DIRECTORY_SEPARATOR . 'resources',
             'epub-image.png',
             'image/png',
         );
-
-        $epubDocument = new EpubDocument('test', 'phpunit', 'unique-identifier', sys_get_temp_dir(), $coverImage);
-
         $epubDocument->addImage($image);
 
-        $section1Content = '<h1>Chapter 1</h1><p>This is the content of Chapter 1.</p>';
-        $epubDocument->addSection('section1', 'Section 1', $section1Content);
-        $section2Content = '<h1>Chapter 2</h1><p>This is the content of Chapter 2.</p><img src="img/epub-image.png" />';
-        $epubDocument->addSection('section2', 'Section 2', $section2Content);
+        $sectionOne = new EpubSection(
+            'section1',
+            'Section 1',
+            '<h1>Chapter 1</h1><p>This is the content of Chapter 1.</p>',
+        );
+        $epubDocument->addSection($sectionOne);
+
+
+        $sectionTwo = new EpubSection(
+            'section2',
+            'Section 2',
+            '<h1>Chapter 2</h1><p>This is the content of Chapter 2.</p><img src="img/epub-image.png" />',
+        );
+        $epubDocument->addSection($sectionTwo);
 
         $epubFile = $epubDocument->generateEpub();
 
