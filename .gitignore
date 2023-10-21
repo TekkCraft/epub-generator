@@ -4,5 +4,6 @@ composer.phar
 .DS_STORE
 cache.properties
 .phpunit.result.cache
+.phpunit.cache/
 
 vendor/
