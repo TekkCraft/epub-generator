@@ -27,7 +27,9 @@ class EpubDocumentTest extends TestCase
         $epubDocument->addSection('section3', 'Section 3', $section1Content);
         $epubFile = $epubDocument->generateEpub();
 
-        exec("java -jar resources/EPUBCheck/epubcheck.jar $epubFile 2>&1", $output, $returnCode);
+        $checkJar = __DIR__ . '/resources/EPUBCheck/epubcheck.jar';
+
+        exec("java -jar $checkJar $epubFile 2>&1", $output, $returnCode);
 
         $this->assertEquals(0, $returnCode, "EPUB validation failed:\n" . implode("\n", $output));
     }
