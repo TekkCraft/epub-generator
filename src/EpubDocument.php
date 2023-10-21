@@ -32,16 +32,8 @@ class EpubDocument
      * Add a new section to the EPUB file.
      *
      *  Format:
-     *  <!DOCTYPE html>
-     *  <html xmlns="http://www.w3.org/1999/xhtml">
-     *  <head>
-     *  <title>Chapter 1</title>
-     *  </head>
-     *  <body>
      *  <h1>Chapter 1</h1>
      *  <p>This is the content of Chapter 1.</p>
-     *  </body>
-     *  </html>
      *
      * @param string $sectionName Section name
      * @param string $sectionTitle Section title
@@ -53,7 +45,12 @@ class EpubDocument
         $this->sections[] = new EpubSection($sectionName, $sectionTitle, $content);
     }
 
-    public function generateEpub()
+    /**
+     * Generate the EPUB file.
+     *
+     * @return string The epub file path
+     */
+    public function generateEpub(): string
     {
         $zip = new ZipArchive();
         $epubFile = $this->path . DIRECTORY_SEPARATOR . $this->name . '.epub';
@@ -76,16 +73,8 @@ class EpubDocument
      * Add content sections to the archive.
      *
      * Format:
-     * <!DOCTYPE html>
-     * <html xmlns="http://www.w3.org/1999/xhtml">
-     * <head>
-     * <title>Chapter 1</title>
-     * </head>
-     * <body>
      * <h1>Chapter 1</h1>
      * <p>This is the content of Chapter 1.</p>
-     * </body>
-     * </html>
      *
      * @param ZipArchive $zip The ZIP archive
      * @return void
@@ -93,8 +82,31 @@ class EpubDocument
     private function addSections(ZipArchive $zip): void
     {
         foreach ($this->sections as $section) {
-            $sectionContent = '<?xml version="1.0" encoding="UTF-8"?>' . $section->getContent();
-            $zip->addFromString(sprintf('EPUB/%s.xhtml', $section->getSectionName()), $sectionContent);
+            $doc = new DOMDocument('1.0', 'UTF-8');
+
+            $implementation = new DOMImplementation();
+            $doctype = $implementation->createDocumentType('html');
+            $doc->appendChild($doctype);
+
+            $html = $doc->createElement('html');
+            $html->setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+            $doc->appendChild($html);
+
+            $head = $doc->createElement('head');
+            $html->appendChild($head);
+
+            $title = $doc->createElement('title', $section->getSectionTitle());
+            $head->appendChild($title);
+
+            $body = $doc->createElement('body');
+            $html->appendChild($body);
+
+            $fragment = $doc->createDocumentFragment();
+            $fragment->appendXML($section->getContent());
+
+            $body->appendChild($fragment);
+
+            $zip->addFromString(sprintf('EPUB/%s.xhtml', $section->getSectionName()), $doc->saveXML());
         }
     }
 
