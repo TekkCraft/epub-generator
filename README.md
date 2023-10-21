@@ -52,6 +52,14 @@ header(sprintf('Content-Disposition: attachment; filename="%s.epub"', 'my-ebook'
 header(sprintf('Content-Length: %s', strlen($epubFile)));
 ```
 
+## Validating an EPUB file
+
+To validate an epub file, you can use the [epubcheck tool](https://github.com/w3c/epubcheck) provided by w3c.\
+I did not include this in my repository as it is a .jar file and therefore needs Java to run.
+In addition to that, you will probably have to use PHP's exec() function to call it, which is generally unsafe.
+
+(It is, however downloaded when running the test suite, as this should not happen on a production system)
+
 ## Testing
 
 In order to run the PHPUnit test suite you will need to have java installed on your system in order to use the ``epubcheck.jar``.
