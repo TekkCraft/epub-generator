@@ -14,6 +14,8 @@ $epubFile = $generator->generateEpub();
 This would create a new EPUB file named ``book.epub`` in the directory ``/path/to/storage-directory``.
 The ``$epubFile`` contains the file name of the generated EPUB.
 
+All images are saved in the ``img`` folder.
+
 ## Required headers for download
 
 If you want to provide your EPUB file as a download, add these headers:

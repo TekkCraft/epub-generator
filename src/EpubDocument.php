@@ -13,6 +13,9 @@ class EpubDocument
     /** @var EpubSection[] Sections to be added to the EPUB */
     private array $sections = [];
 
+    /** @var EpubImage[] Images to be added to the EPUB */
+    private array $images = [];
+
     /** @var string The image directory */
     private string $imageDir;
 
@@ -31,6 +34,7 @@ class EpubDocument
         private EpubImage $coverImage,
     ) {
         $this->imageDir = 'EPUB/img';
+        $this->images[] = $this->coverImage;
     }
 
     /**
@@ -51,6 +55,17 @@ class EpubDocument
     }
 
     /**
+     * Add a new image to be used in the EPUB file.
+     *
+     * @param EpubImage $image The image
+     * @return void
+     */
+    public function addImage(EpubImage $image): void
+    {
+        $this->images[] = $image;
+    }
+
+    /**
      * Generate the EPUB file.
      *
      * @return string The epub file path
@@ -61,8 +76,7 @@ class EpubDocument
         $epubFile = $this->path . '/' . $this->name . '.epub';
         if ($zip->open($epubFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
             $this->addMimetype($zip);
-            $this->addImageDir($zip);
-            $this->addCoverImage($zip);
+            $this->addImages($zip);
             $this->addContainer($zip);
             $this->addTocPage($zip);
             $this->addPackageOpf($zip);
@@ -77,28 +91,20 @@ class EpubDocument
     }
 
     /**
-     * Create the image directory.
+     * Create image directory and ddd images to EPUB.
      *
      * @param ZipArchive $zip The ZIP archive
      * @return void
      */
-    private function addImageDir(ZipArchive $zip): void
+    private function addImages(ZipArchive $zip): void
     {
         $zip->addEmptyDir($this->imageDir);
-    }
-
-    /**
-     * Add cover image to img dir.
-     *
-     * @param ZipArchive $zip The ZIP archive
-     * @return void
-     */
-    private function addCoverImage(ZipArchive $zip): void
-    {
-        $zip->addFile(
-            $this->coverImage->getImagePath() . '/' . $this->coverImage->getImageName(),
-            $this->imageDir . '/' . $this->coverImage->getImageName(),
-        );
+        foreach ($this->images as $image) {
+            $zip->addFile(
+                $image->getImagePath() . '/' . $image->getImageName(),
+                $this->imageDir . '/' . $image->getImageName(),
+            );
+        }
     }
 
     /**
@@ -291,17 +297,19 @@ class EpubDocument
         $itemTOC->setAttribute('properties', 'nav');
         $manifestElement->appendChild($itemTOC);
 
-        $cover = $doc->createElement('item');
-        $cover->setAttribute('id', 'cover');
-        $cover->setAttribute('href', 'img/' . $this->coverImage->getImageName());
-        $cover->setAttribute('media-type', $this->coverImage->getMediaType());
-        $manifestElement->appendChild($cover);
-
         foreach ($this->sections as $section) {
             $itemSection = $doc->createElement('item');
             $itemSection->setAttribute('id', $section->getSectionName());
             $itemSection->setAttribute('href', $section->getSectionName() . '.xhtml');
             $itemSection->setAttribute('media-type', 'application/xhtml+xml');
+            $manifestElement->appendChild($itemSection);
+        }
+
+        foreach ($this->images as $image) {
+            $itemSection = $doc->createElement('item');
+            $itemSection->setAttribute('id', $image->getImageName());
+            $itemSection->setAttribute('href', 'img/' . $image->getImageName());
+            $itemSection->setAttribute('media-type', $image->getMediaType());
             $manifestElement->appendChild($itemSection);
         }
 
