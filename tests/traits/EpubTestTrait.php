@@ -25,6 +25,11 @@ trait EpubTestTrait
     private function getEpubCheckDir(): string
     {
         $parentDir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'epubcheck';
+
+        if (!is_dir($parentDir)) {
+            mkdir($parentDir);
+        }
+
         $installDir = scandir($parentDir)[2];
 
         return $parentDir . DIRECTORY_SEPARATOR . $installDir;
