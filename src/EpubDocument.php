@@ -13,27 +13,34 @@ class EpubDocument
     /** @var EpubSection[] Sections to be added to the EPUB */
     private array $sections = [];
 
-    /** @var EpubImage[] Images to be added to the EPUB */
+    /** @var EpubAsset[] Images to be added to the EPUB */
     private array $images = [];
+
+    /** @var EpubAsset[] CSS files to be added to the EPUB */
+    private array $cssFiles = [];
 
     /** @var string The image directory */
     private string $imageDir;
+
+    /** @var string The CSS directory */
+    private string $cssDir;
 
     /**
      * @param string $name The EPUB file name
      * @param string $author The author of the EPUB
      * @param string $identifier The identifier of the EPUB
      * @param string $path The path where the EPUB file should be saved to
-     * @param EpubImage $coverImage The image to be used as the cover
+     * @param EpubAsset $coverImage The image to be used as the cover
      */
     public function __construct(
         private string $name,
         private string $author,
         private string $identifier,
         private string $path,
-        private EpubImage $coverImage,
+        private EpubAsset $coverImage,
     ) {
         $this->imageDir = 'EPUB/img';
+        $this->cssDir = 'EPUB/css';
         $this->images[] = $this->coverImage;
     }
 
@@ -50,12 +57,23 @@ class EpubDocument
     /**
      * Add a new image to be used in the EPUB file.
      *
-     * @param EpubImage $image The image
+     * @param EpubAsset $image The image
      * @return void
      */
-    public function addImage(EpubImage $image): void
+    public function addImage(EpubAsset $image): void
     {
         $this->images[] = $image;
+    }
+
+    /**
+     * Add a new CSS file to be used in the EPUB file.
+     *
+     * @param EpubAsset $cssFile The CSS file
+     * @return void
+     */
+    public function addCss(EpubAsset $cssFile): void
+    {
+        $this->cssFiles[] = $cssFile;
     }
 
     /**
@@ -70,6 +88,7 @@ class EpubDocument
         if ($zip->open($epubFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
             $this->addMimetype($zip);
             $this->addImages($zip);
+            $this->addCssFiles($zip);
             $this->addContainer($zip);
             $this->addTocPage($zip);
             $this->addPackageOpf($zip);
@@ -94,8 +113,25 @@ class EpubDocument
         $zip->addEmptyDir($this->imageDir);
         foreach ($this->images as $image) {
             $zip->addFile(
-                $image->getImagePath() . '/' . $image->getImageName(),
-                $this->imageDir . '/' . $image->getImageName(),
+                $image->getAssetPath() . '/' . $image->getAssetName(),
+                $this->imageDir . '/' . $image->getAssetName(),
+            );
+        }
+    }
+
+    /**
+     * Create css directory and ddd CSS files to EPUB.
+     *
+     * @param ZipArchive $zip The ZIP archive
+     * @return void
+     */
+    private function addCssFiles(ZipArchive $zip): void
+    {
+        $zip->addEmptyDir($this->cssDir);
+        foreach ($this->cssFiles as $cssFile) {
+            $zip->addFile(
+                $cssFile->getAssetPath() . '/' . $cssFile->getAssetName(),
+                $this->cssDir . '/' . $cssFile->getAssetName(),
             );
         }
     }
@@ -125,6 +161,14 @@ class EpubDocument
 
             $head = $doc->createElement('head');
             $html->appendChild($head);
+
+            foreach ($this->cssFiles as $cssFile) {
+                $css = $doc->createElement('link');
+                $css->setAttribute('rel', 'stylesheet');
+                $css->setAttribute('type', 'text/css');
+                $css->setAttribute('href', 'css/' . $cssFile->getAssetName());
+                $head->appendChild($css);
+            }
 
             $title = $doc->createElement('title', $section->getSectionTitle());
             $head->appendChild($title);
@@ -276,7 +320,7 @@ class EpubDocument
         $coverElement->setAttribute('name', 'cover');
         $coverElement->setAttribute(
             'content',
-            'img/' . $this->coverImage->getImageName(),
+            'img/' . $this->coverImage->getAssetName(),
         );
         $metadataElement->appendChild($coverElement);
 
@@ -299,11 +343,19 @@ class EpubDocument
         }
 
         foreach ($this->images as $image) {
-            $itemSection = $doc->createElement('item');
-            $itemSection->setAttribute('id', $image->getImageName());
-            $itemSection->setAttribute('href', 'img/' . $image->getImageName());
-            $itemSection->setAttribute('media-type', $image->getMediaType());
-            $manifestElement->appendChild($itemSection);
+            $imageSection = $doc->createElement('item');
+            $imageSection->setAttribute('id', $image->getAssetName());
+            $imageSection->setAttribute('href', 'img/' . $image->getAssetName());
+            $imageSection->setAttribute('media-type', $image->getMediaType());
+            $manifestElement->appendChild($imageSection);
+        }
+
+        foreach ($this->cssFiles as $cssFile) {
+            $cssSection = $doc->createElement('item');
+            $cssSection->setAttribute('id', $cssFile->getAssetName());
+            $cssSection->setAttribute('href', 'css/' . $cssFile->getAssetName());
+            $cssSection->setAttribute('media-type', $cssFile->getMediaType());
+            $manifestElement->appendChild($cssSection);
         }
 
         $spineElement = $doc->createElement('spine');

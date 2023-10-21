@@ -4,7 +4,7 @@ namespace Tekkcraft\EpubGenerator\Test;
 
 use Tekkcraft\EpubGenerator\EpubDocument;
 use PHPUnit\Framework\TestCase;
-use Tekkcraft\EpubGenerator\EpubImage;
+use Tekkcraft\EpubGenerator\EpubAsset;
 use Tekkcraft\EpubGenerator\EpubSection;
 use Tekkcraft\EpubGenerator\Test\traits\EpubTestTrait;
 
@@ -26,7 +26,7 @@ class EpubDocumentTest extends TestCase
     {
         $this->ensureEpubChecker();
 
-        $coverImage = new EpubImage(
+        $coverImage = new EpubAsset(
             __DIR__ . DIRECTORY_SEPARATOR . 'resources',
             'epub-cover.png',
             'image/png',
@@ -34,7 +34,14 @@ class EpubDocumentTest extends TestCase
 
         $epubDocument = new EpubDocument('test', 'phpunit', 'unique-identifier', sys_get_temp_dir(), $coverImage);
 
-        $image = new EpubImage(
+        $css = new EpubAsset(
+            __DIR__ . DIRECTORY_SEPARATOR . 'resources',
+            'epub.css',
+            'text/css',
+        );
+        $epubDocument->addCss($css);
+
+        $image = new EpubAsset(
             __DIR__ . DIRECTORY_SEPARATOR . 'resources',
             'epub-image.png',
             'image/png',
@@ -44,7 +51,7 @@ class EpubDocumentTest extends TestCase
         $sectionOne = new EpubSection(
             'section1',
             'Section 1',
-            '<h1>Chapter 1</h1><p>This is the content of Chapter 1.</p>',
+            '<h1>Chapter 1</h1><p class="example">This is the content of Chapter 1.</p>',
         );
         $epubDocument->addSection($sectionOne);
 
