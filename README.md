@@ -5,16 +5,22 @@ A simple library to generate EPUB files.
 ## Usage
 
 ```php
-$generator = new \Tekkcraft\EpubGenerator\EpubDocument('book', 'TekkCraft', 'unique-book-name', '/path/to/storage-directory');
+$coverImage = new \Tekkcraft\EpubGenerator\EpubImage('path/to/image-folder', 'cover.png', 'image/png');
+
+$generator = new \Tekkcraft\EpubGenerator\EpubDocument('book', 'TekkCraft', 'unique-book-name', '/path/to/storage-directory', $coverImage);
 $generator->addSection('section1', 'Section 1', '<h1>Section 1</h1><p>Some</p><p>content</p>');
-$generator->addSection('section2', 'Section 2', '<h1>Section 2</h1><p>Some other</p><p>content</p>');
+
+$image = new \Tekkcraft\EpubGenerator\EpubImage('path/to/image-folder', 'image.png', 'image/png');
+$generator->addImage($image);
+$generator->addSection('section2', 'Section 2', '<h1>Section 2</h1><img src="img/image.png"/>');
+
 $epubFile = $generator->generateEpub();
 ```
 
 This would create a new EPUB file named ``book.epub`` in the directory ``/path/to/storage-directory``.
 The ``$epubFile`` contains the file name of the generated EPUB.
 
-All images are saved in the ``img`` folder.
+All images are saved in the ``img`` folder and can be accessed using ``img/image-name.png``.
 
 ## Required headers for download
 
