@@ -6,4 +6,3 @@ cache.properties
 .phpunit.result.cache
 
 vendor/
-resources/
