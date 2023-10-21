@@ -5,9 +5,18 @@ namespace Tekkcraft\EpubGenerator\Test;
 use Tekkcraft\EpubGenerator\EpubDocument;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @coversDefaultClass \Tekkcraft\EpubGenerator\EpubDocument
+ */
 class EpubDocumentTest extends TestCase
 {
-
+    /**
+     * Test generation of an EPUB document.
+     *
+     * @return void
+     * @covers ::generateEpub
+     * @covers ::addSection
+     */
     public function testGenerateEpub()
     {
         $epubDocument = new EpubDocument('test', 'phpunit', 'unique-identifier', sys_get_temp_dir());
