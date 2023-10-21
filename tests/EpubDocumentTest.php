@@ -4,8 +4,8 @@ namespace Tekkcraft\EpubGenerator\Test;
 
 use Tekkcraft\EpubGenerator\EpubDocument;
 use PHPUnit\Framework\TestCase;
+use Tekkcraft\EpubGenerator\EpubImage;
 use Tekkcraft\EpubGenerator\Test\traits\EpubTestTrait;
-use ZipArchive;
 
 /**
  * @coversDefaultClass \Tekkcraft\EpubGenerator\EpubDocument
@@ -13,13 +13,6 @@ use ZipArchive;
 class EpubDocumentTest extends TestCase
 {
     use EpubTestTrait;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-    }
-
 
     /**
      * Test generation of an EPUB document.
@@ -32,7 +25,13 @@ class EpubDocumentTest extends TestCase
     {
         $this->ensureEpubChecker();
 
-        $epubDocument = new EpubDocument('test', 'phpunit', 'unique-identifier', sys_get_temp_dir());
+        $coverImage = new EpubImage(
+            __DIR__ . DIRECTORY_SEPARATOR . 'resources',
+            'epub-cover.png',
+            'image/png',
+        );
+
+        $epubDocument = new EpubDocument('test', 'phpunit', 'unique-identifier', sys_get_temp_dir(), $coverImage);
 
         $section1Content = '<h1>Chapter 1</h1><p>This is the content of Chapter 1.</p>';
         $epubDocument->addSection('section1', 'Section 1', $section1Content);

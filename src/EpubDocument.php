@@ -6,7 +6,6 @@ use DateTime;
 use DOMDocument;
 use DOMImplementation;
 use RuntimeException;
-use SimpleXMLElement;
 use ZipArchive;
 
 class EpubDocument
@@ -14,18 +13,24 @@ class EpubDocument
     /** @var EpubSection[] Sections to be added to the EPUB */
     private array $sections = [];
 
+    /** @var string The image directory */
+    private string $imageDir;
+
     /**
      * @param string $name The EPUB file name
      * @param string $author The author of the EPUB
      * @param string $identifier The identifier of the EPUB
      * @param string $path The path where the EPUB file should be saved to
+     * @param EpubImage $coverImage The image to be used as the cover
      */
     public function __construct(
         private string $name,
         private string $author,
         private string $identifier,
         private string $path,
+        private EpubImage $coverImage,
     ) {
+        $this->imageDir = 'EPUB/img';
     }
 
     /**
@@ -53,9 +58,11 @@ class EpubDocument
     public function generateEpub(): string
     {
         $zip = new ZipArchive();
-        $epubFile = $this->path . DIRECTORY_SEPARATOR . $this->name . '.epub';
+        $epubFile = $this->path . '/' . $this->name . '.epub';
         if ($zip->open($epubFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
             $this->addMimetype($zip);
+            $this->addImageDir($zip);
+            $this->addCoverImage($zip);
             $this->addContainer($zip);
             $this->addTocPage($zip);
             $this->addPackageOpf($zip);
@@ -67,6 +74,31 @@ class EpubDocument
         }
 
         throw new RuntimeException('Could not initiate epub (ZIP) file in memory');
+    }
+
+    /**
+     * Create the image directory.
+     *
+     * @param ZipArchive $zip The ZIP archive
+     * @return void
+     */
+    private function addImageDir(ZipArchive $zip): void
+    {
+        $zip->addEmptyDir($this->imageDir);
+    }
+
+    /**
+     * Add cover image to img dir.
+     *
+     * @param ZipArchive $zip The ZIP archive
+     * @return void
+     */
+    private function addCoverImage(ZipArchive $zip): void
+    {
+        $zip->addFile(
+            $this->coverImage->getImagePath() . '/' . $this->coverImage->getImageName(),
+            $this->imageDir . '/' . $this->coverImage->getImageName(),
+        );
     }
 
     /**
@@ -241,6 +273,14 @@ class EpubDocument
         $metadataElement->appendChild($doc->createElement('meta', $currentTime->format('Y-m-d\TH:i:s\Z')))
             ->setAttribute('property', 'dcterms:modified');
 
+        $coverElement = $doc->createElement('meta');
+        $coverElement->setAttribute('name', 'cover');
+        $coverElement->setAttribute(
+            'content',
+            'img/' . $this->coverImage->getImageName(),
+        );
+        $metadataElement->appendChild($coverElement);
+
         $manifestElement = $doc->createElement('manifest');
         $packageElement->appendChild($manifestElement);
 
@@ -250,6 +290,12 @@ class EpubDocument
         $itemTOC->setAttribute('media-type', 'application/xhtml+xml');
         $itemTOC->setAttribute('properties', 'nav');
         $manifestElement->appendChild($itemTOC);
+
+        $cover = $doc->createElement('item');
+        $cover->setAttribute('id', 'cover');
+        $cover->setAttribute('href', 'img/' . $this->coverImage->getImageName());
+        $cover->setAttribute('media-type', $this->coverImage->getMediaType());
+        $manifestElement->appendChild($cover);
 
         foreach ($this->sections as $section) {
             $itemSection = $doc->createElement('item');
