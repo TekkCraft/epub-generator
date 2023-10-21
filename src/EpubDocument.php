@@ -129,18 +129,25 @@ class EpubDocument
      */
     private function addContainer(ZipArchive $zip): void
     {
-        $containerElement = new SimpleXMLElement('<container/>');
-        $containerElement->addAttribute('version', '1.0', 'urn:oasis:names:tc:opendocument:xmlns:container');
+        $dom = new DOMDocument('1.0', 'UTF-8');
 
-        $containerElement->addAttribute('version', '1.0');
-        $containerElement->addAttribute('xmlns', 'urn:oasis:names:tc:opendocument:xmlns:container');
+        $containerElement = $dom->createElement('container');
+        $containerElement->setAttribute('version', '1.0');
+        $containerElement->setAttribute('xmlns', 'urn:oasis:names:tc:opendocument:xmlns:container');
 
-        $rootfiles = $containerElement->addChild('rootfiles');
-        $rootfile = $rootfiles->addChild('rootfile');
-        $rootfile->addAttribute('full-path', 'EPUB/package.opf');
-        $rootfile->addAttribute('media-type', 'application/oebps-package+xml');
+        $rootfiles = $dom->createElement('rootfiles');
 
-        $containerXml = $containerElement->asXML();
+        $rootfile = $dom->createElement('rootfile');
+        $rootfile->setAttribute('full-path', 'EPUB/package.opf');
+        $rootfile->setAttribute('media-type', 'application/oebps-package+xml');
+
+        $rootfiles->appendChild($rootfile);
+
+        $containerElement->appendChild($rootfiles);
+
+        $dom->appendChild($containerElement);
+
+        $containerXml = $dom->saveXML();
 
         $zip->addFromString('META-INF/container.xml', $containerXml);
     }
