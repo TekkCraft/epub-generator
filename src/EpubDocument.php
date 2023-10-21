@@ -33,12 +33,13 @@ class EpubDocument
      * @param EpubAsset $coverImage The image to be used as the cover
      */
     public function __construct(
-        private string $name,
-        private string $author,
-        private string $identifier,
-        private string $path,
+        private string    $name,
+        private string    $author,
+        private string    $identifier,
+        private string    $path,
         private EpubAsset $coverImage,
-    ) {
+    )
+    {
         $this->imageDir = 'EPUB/img';
         $this->cssDir = 'EPUB/css';
         $this->images[] = $this->coverImage;
@@ -127,6 +128,10 @@ class EpubDocument
      */
     private function addCssFiles(ZipArchive $zip): void
     {
+        if (empty($this->cssFiles)) {
+            return;
+        }
+
         $zip->addEmptyDir($this->cssDir);
         foreach ($this->cssFiles as $cssFile) {
             $zip->addFile(
