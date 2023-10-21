@@ -27,3 +27,4 @@ header(sprintf('Content-Length: %s', strlen($epubFile)));
 ## Testing
 
 In order to run the PHPUnit test suite you will need to have java installed on your system in order to use the ``epubcheck.jar``.
+The ``epubcheck.jar`` will be downloaded from [https://github.com/w3c/epubcheck](https://github.com/w3c/epubcheck) and saved into the ``sys_get_temp_dir()`` on first test execution.
