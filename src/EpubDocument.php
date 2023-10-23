@@ -90,9 +90,12 @@ class EpubDocument
             $this->addMimetype($zip);
             $this->addAssets($zip);
             $this->addContainer($zip);
-            $this->addPackageOpf($zip);
             $this->createTocBody();
+            if ($this->coverImage) {
+                $this->createCoverBody();
+            }
             $this->addSections($zip);
+            $this->addPackageOpf($zip);
 
             $zip->close();
 
@@ -236,6 +239,30 @@ class EpubDocument
     }
 
     /**
+     * Create TOC section.
+     *
+     * @return void
+     */
+    private function createCoverBody(): void
+    {
+        $doc = new DOMDocument();
+
+        $img = $doc->createElement('img');
+        $img->setAttribute('src', '../' . $this->coverImage->getHref());
+        $doc->appendChild($img);
+
+        $doc->formatOutput = true;
+        $doc->preserveWhiteSpace = true;
+
+        $html = $doc->saveHTML();
+
+        // Enforce closing / required for XHTML format and remove unnecessary "\n"
+        $html = substr_replace($html, ' />', -2, 3);
+
+        array_unshift($this->sections, new EpubSection('cover-page', 'Cover Page', $html));
+    }
+
+    /**
      * Add mimetype file to the archive.
      *
      * @param ZipArchive $zip The ZIP archive
@@ -321,18 +348,16 @@ class EpubDocument
         $manifestElement = $doc->createElement('manifest');
         $packageElement->appendChild($manifestElement);
 
-        $itemTOC = $doc->createElement('item');
-        $itemTOC->setAttribute('id', 'toc');
-        $itemTOC->setAttribute('href', 'xhtml/toc.xhtml');
-        $itemTOC->setAttribute('media-type', 'application/xhtml+xml');
-        $itemTOC->setAttribute('properties', 'nav');
-        $manifestElement->appendChild($itemTOC);
-
         foreach ($this->sections as $section) {
             $itemSection = $doc->createElement('item');
             $itemSection->setAttribute('id', $section->getSectionName());
             $itemSection->setAttribute('href', $section->getHref());
             $itemSection->setAttribute('media-type', 'application/xhtml+xml');
+
+            if ($section->getSectionName() === 'toc') {
+                $itemSection->setAttribute('properties', 'nav');
+            }
+
             $manifestElement->appendChild($itemSection);
         }
 
@@ -346,10 +371,6 @@ class EpubDocument
 
         $spineElement = $doc->createElement('spine');
         $packageElement->appendChild($spineElement);
-
-        $itemRefTOC = $doc->createElement('itemref');
-        $itemRefTOC->setAttribute('idref', 'toc');
-        $spineElement->appendChild($itemRefTOC);
 
         $doc->appendChild($packageElement);
 
