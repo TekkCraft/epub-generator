@@ -30,19 +30,22 @@ class EpubDocument
      * @param string $author The author of the EPUB
      * @param string $identifier The identifier of the EPUB
      * @param string $path The path where the EPUB file should be saved to
-     * @param EpubAsset $coverImage The image to be used as the cover
+     * @param EpubAsset|null $coverImage The image to be used as the cover
      */
     public function __construct(
-        private string    $name,
-        private string    $author,
-        private string    $identifier,
-        private string    $path,
-        private EpubAsset $coverImage,
+        private string     $name,
+        private string     $author,
+        private string     $identifier,
+        private string     $path,
+        private ?EpubAsset $coverImage = null,
     )
     {
         $this->imageDir = 'EPUB/img';
         $this->cssDir = 'EPUB/css';
-        $this->images[] = $this->coverImage;
+
+        if ($this->coverImage) {
+            $this->images[] = $this->coverImage;
+        }
     }
 
     /**
@@ -111,6 +114,10 @@ class EpubDocument
      */
     private function addImages(ZipArchive $zip): void
     {
+        if (empty($this->images)) {
+            return;
+        }
+
         $zip->addEmptyDir($this->imageDir);
         foreach ($this->images as $image) {
             $zip->addFile(
@@ -321,14 +328,15 @@ class EpubDocument
         $metadataElement->appendChild($doc->createElement('meta', $currentTime->format('Y-m-d\TH:i:s\Z')))
             ->setAttribute('property', 'dcterms:modified');
 
-        $coverElement = $doc->createElement('meta');
-        $coverElement->setAttribute('name', 'cover');
-        $coverElement->setAttribute(
-            'content',
-            'img/' . $this->coverImage->getAssetName(),
-        );
-        $metadataElement->appendChild($coverElement);
-
+        if ($this->coverImage) {
+            $coverElement = $doc->createElement('meta');
+            $coverElement->setAttribute('name', 'cover');
+            $coverElement->setAttribute(
+                'content',
+                'img/' . $this->coverImage->getAssetName(),
+            );
+            $metadataElement->appendChild($coverElement);
+        }
         $manifestElement = $doc->createElement('manifest');
         $packageElement->appendChild($manifestElement);
 
