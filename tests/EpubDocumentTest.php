@@ -83,7 +83,7 @@ class EpubDocumentTest extends TestCase
     {
         $this->ensureEpubChecker();
 
-        $epubDocument = new EpubDocument('test', 'phpunit', 'unique-identifier', sys_get_temp_dir());
+        $epubDocument = new EpubDocument('test-without-cover', 'phpunit', 'unique-identifier', sys_get_temp_dir());
 
         $css = new EpubAsset(
             __DIR__ . DIRECTORY_SEPARATOR . 'resources',

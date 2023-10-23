@@ -90,8 +90,8 @@ class EpubDocument
             $this->addMimetype($zip);
             $this->addAssets($zip);
             $this->addContainer($zip);
-            $this->addTocPage($zip);
             $this->addPackageOpf($zip);
+            $this->createTocBody();
             $this->addSections($zip);
 
             $zip->close();
@@ -164,6 +164,7 @@ class EpubDocument
 
             $html = $doc->createElement('html');
             $html->setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+            $html->setAttribute('xmlns:epub', 'http://www.idpf.org/2007/ops');
             $doc->appendChild($html);
 
             $head = $doc->createElement('head');
@@ -193,6 +194,45 @@ class EpubDocument
 
             $zip->addFromString(sprintf('%s/%s', $this->contentDir, $section->getHref()), $doc->saveXML());
         }
+    }
+
+    /**
+     * Create TOC section.
+     *
+     * @return void
+     */
+    private function createTocBody(): void
+    {
+        $doc = new DOMDocument();
+        $div = $doc->createElement('div');
+        $div->setAttribute('xmlns:epub', 'http://www.idpf.org/2007/ops');
+        $doc->appendChild($div);
+
+        $h1 = $doc->createElement('h1', 'Table of Contents');
+        $div->appendChild($h1);
+
+        // Build navigation part
+        $nav = $doc->createElement('nav');
+        $nav->setAttribute('id', 'toc');
+        $nav->setAttribute('epub:type', 'toc');
+        $div->appendChild($nav);
+
+        // Create ordered list
+        $ol = $doc->createElement('ol');
+        $nav->appendChild($ol);
+
+        // Add list items to ordered list
+        foreach ($this->sections as $section) {
+            $li = $doc->createElement('li');
+            $ol->appendChild($li);
+            $a = $doc->createElement('a', $section->getSectionTitle());
+            $li->appendChild($a);
+            $a->setAttribute('href', $section->getSectionName() . '.xhtml');
+        }
+
+        $result = $doc->saveHTML();
+
+        array_unshift($this->sections, new EpubSection('toc', 'Table of Contents', $result));
     }
 
     /**
@@ -235,63 +275,6 @@ class EpubDocument
         $containerXml = $dom->saveXML();
 
         $zip->addFromString('META-INF/container.xml', $containerXml);
-    }
-
-    /**
-     * Add required table of contents page.
-     *
-     * @param ZipArchive $zip The ZIP archive
-     * @return void
-     */
-    private function addTocPage(ZipArchive $zip): void
-    {
-        $doc = new DOMDocument('1.0', 'UTF-8');
-
-        // Add <!DOCTYPE html> part
-        $implementation = new DOMImplementation();
-        $doctype = $implementation->createDocumentType('html');
-        $doc->appendChild($doctype);
-
-        $html = $doc->createElement('html');
-        $html->setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
-        $html->setAttribute('xmlns:epub', 'http://www.idpf.org/2007/ops');
-
-        $doc->appendChild($html);
-
-        // Build header part
-        $header = $doc->createElement('head');
-        $html->appendChild($header);
-        $title = $doc->createElement('title', 'Table of Contents');
-        $header->appendChild($title);
-
-        // Build body part
-        $body = $doc->createElement('body');
-        $html->appendChild($body);
-        $h1 = $doc->createElement('h1', 'Table of Contents');
-        $body->appendChild($h1);
-
-        // Build navigation part
-        $nav = $doc->createElement('nav');
-        $nav->setAttribute('id', 'toc');
-        $nav->setAttribute('epub:type', 'toc');
-        $body->appendChild($nav);
-
-        // Create ordered list
-        $ol = $doc->createElement('ol');
-        $nav->appendChild($ol);
-
-        // Add list items to ordered list
-        foreach ($this->sections as $section) {
-            $li = $doc->createElement('li');
-            $ol->appendChild($li);
-            $a = $doc->createElement('a', $section->getSectionTitle());
-            $li->appendChild($a);
-            $a->setAttribute('href', $section->getHref());
-        }
-
-        $navContent = $doc->saveXML();
-
-        $zip->addFromString($this->contentDir . '/toc.xhtml', $navContent);
     }
 
     /**
@@ -340,7 +323,7 @@ class EpubDocument
 
         $itemTOC = $doc->createElement('item');
         $itemTOC->setAttribute('id', 'toc');
-        $itemTOC->setAttribute('href', 'toc.xhtml');
+        $itemTOC->setAttribute('href', 'xhtml/toc.xhtml');
         $itemTOC->setAttribute('media-type', 'application/xhtml+xml');
         $itemTOC->setAttribute('properties', 'nav');
         $manifestElement->appendChild($itemTOC);
