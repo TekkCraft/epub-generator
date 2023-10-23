@@ -4,6 +4,9 @@ namespace Tekkcraft\EpubGenerator;
 
 final class EpubSection
 {
+    /** @var string The path prefix */
+    private string $pathPrefix = 'xhtml';
+
     /**
      * Create a new EPUB section.
      *
@@ -47,5 +50,25 @@ final class EpubSection
     public function getContent(): string
     {
         return $this->content;
+    }
+
+    /**
+     * Get the path prefix
+     *
+     * @return string
+     */
+    public function getPathPrefix(): string
+    {
+        return $this->pathPrefix;
+    }
+
+    /**
+     * Get the path prefix
+     *
+     * @return string
+     */
+    public function getHref(): string
+    {
+        return $this->pathPrefix . '/' . $this->sectionName . '.xhtml';
     }
 }

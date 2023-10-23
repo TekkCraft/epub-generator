@@ -59,7 +59,7 @@ class EpubDocumentTest extends TestCase
         $sectionTwo = new EpubSection(
             'section2',
             'Section 2',
-            '<h1>Chapter 2</h1><p>This is the content of Chapter 2.</p><img src="img/epub-image.png" />',
+            '<h1>Chapter 2</h1><p>This is the content of Chapter 2.</p><img src="../img/epub-image.png" />',
         );
         $epubDocument->addSection($sectionTwo);
 
@@ -110,7 +110,7 @@ class EpubDocumentTest extends TestCase
         $sectionTwo = new EpubSection(
             'section2',
             'Section 2',
-            '<h1>Chapter 2</h1><p>This is the content of Chapter 2.</p><img src="img/epub-image.png" />',
+            '<h1>Chapter 2</h1><p>This is the content of Chapter 2.</p><img src="../img/epub-image.png" />',
         );
         $epubDocument->addSection($sectionTwo);
 

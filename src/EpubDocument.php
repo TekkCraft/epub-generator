@@ -176,7 +176,7 @@ class EpubDocument
                 $css = $doc->createElement('link');
                 $css->setAttribute('rel', 'stylesheet');
                 $css->setAttribute('type', $asset->getMediaType());
-                $css->setAttribute('href', $asset->getHref());
+                $css->setAttribute('href', '../' . $asset->getHref());
                 $head->appendChild($css);
             }
 
@@ -191,7 +191,7 @@ class EpubDocument
 
             $body->appendChild($fragment);
 
-            $zip->addFromString(sprintf('%s/%s.xhtml', $this->contentDir, $section->getSectionName()), $doc->saveXML());
+            $zip->addFromString(sprintf('%s/%s', $this->contentDir, $section->getHref()), $doc->saveXML());
         }
     }
 
@@ -286,7 +286,7 @@ class EpubDocument
             $ol->appendChild($li);
             $a = $doc->createElement('a', $section->getSectionTitle());
             $li->appendChild($a);
-            $a->setAttribute('href', $section->getSectionName() . '.xhtml');
+            $a->setAttribute('href', $section->getHref());
         }
 
         $navContent = $doc->saveXML();
@@ -331,7 +331,7 @@ class EpubDocument
             $coverElement->setAttribute('name', 'cover');
             $coverElement->setAttribute(
                 'content',
-                'img/' . $this->coverImage->getAssetName(),
+                $this->coverImage->getHref(),
             );
             $metadataElement->appendChild($coverElement);
         }
@@ -348,7 +348,7 @@ class EpubDocument
         foreach ($this->sections as $section) {
             $itemSection = $doc->createElement('item');
             $itemSection->setAttribute('id', $section->getSectionName());
-            $itemSection->setAttribute('href', $section->getSectionName() . '.xhtml');
+            $itemSection->setAttribute('href', $section->getHref());
             $itemSection->setAttribute('media-type', 'application/xhtml+xml');
             $manifestElement->appendChild($itemSection);
         }

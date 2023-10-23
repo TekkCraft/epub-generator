@@ -29,7 +29,7 @@ $generator->addImage($image);
 $sectionTwo = new \Tekkcraft\EpubGenerator\EpubSection(
     'section2',
     'Section 2',
-    '<h1>Chapter 2</h1><p>This is the content of Chapter 2.</p><img src="img/image.png" />',
+    '<h1>Chapter 2</h1><p>This is the content of Chapter 2.</p><img src="../img/image.png" />',
 );
 $generator->addSection($sectionTwo);
 
@@ -41,6 +41,9 @@ The ``$epubFile`` contains the file name of the generated EPUB.
 
 All images are saved in the ``img`` folder and can be accessed using ``img/image-name.png``.\
 All CSS assets are saved in the ``css`` folder and can be accessed using ``css/file-name.css``.
+
+All sections will be saved into the ``xhtml`` directory, meaning if you want to reference an image from one of your
+sections, you will need to call it in your HTML using ``../img/my-image.png``.
 
 ## Required headers for download
 
@@ -62,5 +65,7 @@ In addition to that, you will probably have to use PHP's exec() function to call
 
 ## Testing
 
-In order to run the PHPUnit test suite you will need to have java installed on your system in order to use the ``epubcheck.jar``.
-The ``epubcheck.jar`` will be downloaded from [https://github.com/w3c/epubcheck](https://github.com/w3c/epubcheck) and saved into the ``sys_get_temp_dir()`` on first test execution.
+In order to run the PHPUnit test suite you will need to have java installed on your system in order to use
+the ``epubcheck.jar``.
+The ``epubcheck.jar`` will be downloaded from [https://github.com/w3c/epubcheck](https://github.com/w3c/epubcheck) and
+saved into the ``sys_get_temp_dir()`` on first test execution.
