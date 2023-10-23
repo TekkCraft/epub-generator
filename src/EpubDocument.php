@@ -16,11 +16,9 @@ class EpubDocument
     /** @var EpubAsset[] Asset files (CSS & Images) to be added to the EPUB */
     private array $assets = [];
 
-    /** @var string The image directory */
-    private string $imageDir;
+    /** @var string The EPUB content directory */
+    private string $contentDir;
 
-    /** @var string The CSS directory */
-    private string $cssDir;
 
     /**
      * @param string $name The EPUB file name
@@ -37,8 +35,7 @@ class EpubDocument
         private ?EpubAsset $coverImage = null,
     )
     {
-        $this->imageDir = 'EPUB/img';
-        $this->cssDir = 'EPUB/css';
+        $this->contentDir = 'EPUB';
 
         if ($this->coverImage) {
             $this->coverImage->setPathPrefix('img');
@@ -118,11 +115,11 @@ class EpubDocument
         }
 
         foreach ($this->assets as $asset) {
-            if (!$this->zipDirectoryExists($zip, 'EPUB/' . $asset->getPathPrefix())) {
-                $zip->addEmptyDir('EPUB/' . $asset->getPathPrefix());
+            if (!$this->zipDirectoryExists($zip, $this->contentDir . '/' . $asset->getPathPrefix())) {
+                $zip->addEmptyDir($this->contentDir . '/' . $asset->getPathPrefix());
             }
 
-            $zip->addFile($asset->getAssetPath() . '/' . $asset->getAssetName(), 'EPUB/' . $asset->getHref());
+            $zip->addFile($asset->getAssetPath() . '/' . $asset->getAssetName(), $this->contentDir . '/' . $asset->getHref());
         }
     }
 
@@ -194,7 +191,7 @@ class EpubDocument
 
             $body->appendChild($fragment);
 
-            $zip->addFromString(sprintf('EPUB/%s.xhtml', $section->getSectionName()), $doc->saveXML());
+            $zip->addFromString(sprintf('%s/%s.xhtml', $this->contentDir, $section->getSectionName()), $doc->saveXML());
         }
     }
 
@@ -226,7 +223,7 @@ class EpubDocument
         $rootfiles = $dom->createElement('rootfiles');
 
         $rootfile = $dom->createElement('rootfile');
-        $rootfile->setAttribute('full-path', 'EPUB/package.opf');
+        $rootfile->setAttribute('full-path', $this->contentDir . '/package.opf');
         $rootfile->setAttribute('media-type', 'application/oebps-package+xml');
 
         $rootfiles->appendChild($rootfile);
@@ -294,7 +291,7 @@ class EpubDocument
 
         $navContent = $doc->saveXML();
 
-        $zip->addFromString('EPUB/toc.xhtml', $navContent);
+        $zip->addFromString($this->contentDir . '/toc.xhtml', $navContent);
     }
 
     /**
@@ -381,6 +378,6 @@ class EpubDocument
 
         $contentOpf = $doc->saveXML();
 
-        $zip->addFromString('EPUB/package.opf', $contentOpf);
+        $zip->addFromString($this->contentDir . '/package.opf', $contentOpf);
     }
 }
