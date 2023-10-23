@@ -4,6 +4,9 @@ namespace Tekkcraft\EpubGenerator;
 
 class EpubAsset
 {
+    /** @var string Asset path prefix (css/, img/, etc.) */
+    private string $pathPrefix;
+
     /**
      * @param string $assetPath The path to your asset
      * @param string $assetName The name of your asset
@@ -14,7 +17,7 @@ class EpubAsset
     }
 
     /**
-     * Get the image path.
+     * Get the asset path.
      *
      * @return string
      */
@@ -24,7 +27,7 @@ class EpubAsset
     }
 
     /**
-     * Get the image name.
+     * Get the asset name.
      *
      * @return string
      */
@@ -34,12 +37,44 @@ class EpubAsset
     }
 
     /**
-     * Get the image media type.
+     * Get the asset media type.
      *
      * @return string
      */
     public function getMediaType(): string
     {
         return $this->mediaType;
+    }
+
+    /**
+     * Get the asset path.
+     *
+     * @return string
+     */
+    public function getHref(): string
+    {
+        return $this->pathPrefix . '/' . $this->assetName;
+    }
+
+    /**
+     * Get the asset path prefix.
+     *
+     * @return string
+     */
+    public function getPathPrefix(): string
+    {
+        return $this->pathPrefix;
+    }
+
+    /**
+     * Set the asset path prefix.
+     * This is automatically set when adding an asset to the EpubDocument.
+     *
+     * @param string $pathPrefix The asset path prefix
+     * @return void
+     */
+    public function setPathPrefix(string $pathPrefix): void
+    {
+        $this->pathPrefix = $pathPrefix;
     }
 }
