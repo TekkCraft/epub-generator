@@ -36,13 +36,25 @@ trait EpubTestTrait
     }
 
     /**
+     * Check if the EPUB checker is installed.
+     *
+     * @return bool
+     */
+    private function hasEpubChecker(): bool
+    {
+        $dir = $this->getEpubCheckDir();
+
+        return scandir($dir)[2] !== null;
+    }
+
+    /**
      * Ensure EPUB checker is installed.
      *
      * @return void
      */
     public function ensureEpubChecker(): void
     {
-        if (!is_dir($this->getEpubCheckDir())) {
+        if (!$this->hasEpubChecker()) {
             $this->downloadEpubChecker();
         }
     }
