@@ -19,6 +19,8 @@ class EpubDocument
     /** @var string The EPUB content directory */
     private string $contentDir;
 
+    /** @var string The EPUB language */
+    private string $language = 'en';
 
     /**
      * @param string $name The EPUB file name
@@ -332,7 +334,7 @@ class EpubDocument
 
         $metadataElement->appendChild($doc->createElement('dc:title', $this->name));
         $metadataElement->appendChild($doc->createElement('dc:creator', $this->author));
-        $metadataElement->appendChild($doc->createElement('dc:language', 'en'));
+        $metadataElement->appendChild($doc->createElement('dc:language', $this->language));
         $metadataElement->appendChild($doc->createElement('meta', $currentTime->format('Y-m-d\TH:i:s\Z')))
             ->setAttribute('property', 'dcterms:modified');
 
@@ -383,5 +385,15 @@ class EpubDocument
         $contentOpf = $doc->saveXML();
 
         $zip->addFromString($this->contentDir . '/package.opf', $contentOpf);
+    }
+
+    /**
+     * Set the language of the epub.
+     * @param string $lang
+     * @return void
+     */
+    public function setLanguage(string $lang): void
+    {
+        $this->language = $lang;
     }
 }

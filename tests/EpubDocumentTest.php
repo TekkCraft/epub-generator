@@ -122,4 +122,24 @@ class EpubDocumentTest extends TestCase
 
         $this->assertEquals(0, $returnCode, "EPUB validation failed:\n" . implode("\n", $output));
     }
+
+    public function testGenerateEpubWithLanguage(): void
+    {
+        $this->ensureEpubChecker();
+
+        $epubDocument = new EpubDocument('test-in-french', 'phpunit', 'unique-identifier', sys_get_temp_dir());
+        $epubDocument->setLanguage('fr');
+
+        $sectionOne = new EpubSection(
+            'chapitre1',
+            'Chapitre 1',
+            '<h1>Chapitre 1</h1><p class="example">Ceci est le contenu du chapitre 1.</p>',
+        );
+        $epubDocument->addSection($sectionOne);
+
+        $epubFile = $epubDocument->generateEpub();
+
+        $report = $this->getEpubFullReport($epubFile);
+        $this->assertEquals('fr', $report?->publication?->language);
+    }
 }

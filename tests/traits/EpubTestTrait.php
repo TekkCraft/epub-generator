@@ -81,4 +81,20 @@ trait EpubTestTrait
             $zip->close();
         }
     }
+
+    private function getEpubFullReport(string $pathname): \stdClass
+    {
+        $checkJar = $this->getEpubCheckJar();
+
+        exec("java -jar $checkJar --json $pathname.json $pathname 2>&1", $output, $returnCode);
+
+        if (0 === $returnCode) {
+            $json = json_decode(file_get_contents("$pathname.json"));
+            unlink("$pathname.json");
+
+            return $json;
+        } else {
+            throw new \RuntimeException('Unable to generate EPUB report');
+        }
+    }
 }
